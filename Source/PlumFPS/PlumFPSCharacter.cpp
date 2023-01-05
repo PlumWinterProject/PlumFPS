@@ -12,6 +12,7 @@
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "DrawDebugHelpers.h"
+#include <random>
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -135,7 +136,22 @@ void APlumFPSCharacter::OnFire()
 		GetController()->GetPlayerViewPoint(SpawnLocation, SpawnRotation);
 
 		FVector Start = SpawnLocation;
-		FVector End = Start + (SpawnRotation.Vector() * TraceDistance);
+		FVector End;
+
+		if (isAiming) // 조준 사격시에는 총알이 튀지않아야 함
+		{
+			End = Start + (SpawnRotation.Vector() * TraceDistance);
+
+			//TODO 조준시에는 화면자체가 위로 올라가는 반동, 비조준시에는 총알이 퍼지는 범위만 변경 or 범위 변경과 함께 화면자체가 올라가게 하기
+		}
+		else // 비조준 사격시
+		{
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			std::uniform_int_distribution<int> dis(-50, 50);
+			// -50, 50, 2000 숫자 조절시 총알이 튀는 곳이 바뀜
+			End = Start + (((SpawnRotation.Vector() + FVector(float(dis(gen)) / 2000, float(dis(gen)) / 2000, float(dis(gen)) / 2000)) * TraceDistance));
+		}
 
 		FCollisionQueryParams TraceParams;
 		bool bHit = World->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
