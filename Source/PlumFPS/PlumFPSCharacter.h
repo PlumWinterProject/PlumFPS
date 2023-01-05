@@ -20,35 +20,38 @@ class APlumFPSCharacter : public ACharacter
 	GENERATED_BODY()
 
 		/** Pawn mesh: 1st person view (arms; seen only by self) */
-		UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-		USkeletalMeshComponent* Mesh1P;
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	USkeletalMeshComponent* Mesh1P;
 
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-		USkeletalMeshComponent* FP_Gun;
+	USkeletalMeshComponent* FP_Gun;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-		USceneComponent* FP_MuzzleLocation;
+	USceneComponent* FP_MuzzleLocation;
 
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		UCameraComponent* FirstPersonCameraComponent;
+	UCameraComponent* FirstPersonCameraComponent;
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 loadedAmmo;	// ÀåÀüµÈ ÃÑ¾Ë ¼ö
+	int32 loadedAmmo;	// ÀåÀüµÈ ÃÑ¾Ë ¼ö
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 ammoPool;		// ³²Àº ÃÑ¾Ë ¼ö
+	int32 ammoPool;		// ³²Àº ÃÑ¾Ë ¼ö
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 magazine;		// ÅºÃ¢ ¿ë·®
+	int32 magazine;		// ÅºÃ¢ ¿ë·®
 
 	UPROPERTY(VisibleAnywhere, Category = Ammo)
-		bool isReloading;
+	bool isReloading;
 
 	UPROPERTY(VisibleAnywhere, Category = Aim)
-		bool isAiming;
+	bool isAiming;
+
+	UPROPERTY(VisibleAnywhere, Category = Fire)
+	bool isFiring;
 
 public:
 	APlumFPSCharacter();
@@ -83,6 +86,7 @@ public:
 
 private:
 	FTimerHandle reloadTimer;
+	FTimerHandle fireTimer;
 
 protected:
 
@@ -95,6 +99,10 @@ protected:
 	void ReloadDelay();
 
 	void Ads();
+
+	void FullAutoFire();
+
+	void StopFire();
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -114,4 +122,3 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 };
-

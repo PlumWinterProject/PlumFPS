@@ -30,9 +30,10 @@ APlumFPSCharacter::APlumFPSCharacter()
 	loadedAmmo = 30;
 	ammoPool = 100;
 	magazine = 30;
-	isReloading = false;
 
+	isReloading = false;
 	isAiming = false;
+	isFiring = false;
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -86,7 +87,8 @@ void APlumFPSCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	// Bind fire event
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlumFPSCharacter::OnFire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlumFPSCharacter::FullAutoFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlumFPSCharacter::StopFire);
 
 	// Bind reload event
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlumFPSCharacter::Reload);
@@ -100,6 +102,19 @@ void APlumFPSCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+}
+
+void APlumFPSCharacter::FullAutoFire()
+{
+	isFiring = true;
+	OnFire();
+	GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, 0.2f, true); // 0.*f : 연사율, true : 반복
+}
+
+void APlumFPSCharacter::StopFire()
+{
+	isFiring = false;
+	GetWorld()->GetTimerManager().ClearTimer(fireTimer);
 }
 
 void APlumFPSCharacter::OnFire()
@@ -213,6 +228,6 @@ void APlumFPSCharacter::MoveRight(float Value)
 void APlumFPSCharacter::ReloadDelay()
 {
 	isReloading = false;
-	UE_LOG(LogTemp, Log, TEXT("Reloading Complete"));
+	UE_LOG(LogTemp, Log, TEXT("Reloading Complete\nCurrent Ammo : %d / %d"), loadedAmmo, ammoPool);
 	GetWorldTimerManager().ClearTimer(reloadTimer);
 }
