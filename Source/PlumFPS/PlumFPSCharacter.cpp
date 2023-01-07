@@ -142,6 +142,13 @@ void APlumFPSCharacter::OnFire()
 		{
 			End = Start + (SpawnRotation.Vector() * TraceDistance);
 
+			std::random_device rd;
+			std::mt19937 recoil(rd());
+			std::uniform_int_distribution<int> yawRecoil(-50, 50);
+			std::uniform_int_distribution<int> pitchRecoil(-100, 0);
+
+			AddControllerYawInput(float(yawRecoil(recoil)) / 1000);
+			AddControllerPitchInput(float(pitchRecoil(recoil)) / 500);
 			//TODO 조준시에는 화면자체가 위로 올라가는 반동, 비조준시에는 총알이 퍼지는 범위만 변경 or 범위 변경과 함께 화면자체가 올라가게 하기
 		}
 		else // 비조준 사격시
@@ -151,6 +158,13 @@ void APlumFPSCharacter::OnFire()
 			std::uniform_int_distribution<int> dis(-50, 50);
 			// -50, 50, 2000 숫자 조절시 총알이 튀는 곳이 바뀜
 			End = Start + (((SpawnRotation.Vector() + FVector(float(dis(gen)) / 2000, float(dis(gen)) / 2000, float(dis(gen)) / 2000)) * TraceDistance));
+
+			std::mt19937 recoil(rd());
+			std::uniform_int_distribution<int> yawRecoil(-50, 50);
+			std::uniform_int_distribution<int> pitchRecoil(-100, 0);
+
+			AddControllerYawInput(float(yawRecoil(recoil)) / 1000);
+			AddControllerPitchInput(float(pitchRecoil(recoil)) / 500);
 		}
 
 		FCollisionQueryParams TraceParams;
