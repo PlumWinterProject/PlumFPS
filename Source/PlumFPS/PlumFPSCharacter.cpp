@@ -176,6 +176,11 @@ void APlumFPSCharacter::OnFire()
 		{
 			DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 		}
+
+		if (!HasAuthority())
+		{
+			Server_OnFire(Start, End);
+		}
 	}
 
 	// try and play the sound if specified
@@ -193,6 +198,28 @@ void APlumFPSCharacter::OnFire()
 		{
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
+	}
+}
+
+bool APlumFPSCharacter::Server_OnFire_Validate(FVector Start, FVector End)
+{
+	return true;
+}
+
+void APlumFPSCharacter::Server_OnFire_Implementation(FVector Start, FVector End)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Server_OnFire_Implementation HAS BEEN CALLED"));
+
+	FHitResult hit;
+	FCollisionQueryParams TraceParams;
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.0f);
+
+	if (bHit)
+	{
+		DrawDebugBox(GetWorld(), hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 	}
 }
 
