@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+Ôªø// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -20,38 +20,38 @@ class APlumFPSCharacter : public ACharacter
 	GENERATED_BODY()
 
 		/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USkeletalMeshComponent* Mesh1P;
+		UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+		USkeletalMeshComponent* Mesh1P;
 
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USkeletalMeshComponent* FP_Gun;
+		USkeletalMeshComponent* FP_Gun;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USceneComponent* FP_MuzzleLocation;
+		USceneComponent* FP_MuzzleLocation;
 
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FirstPersonCameraComponent;
+		UCameraComponent* FirstPersonCameraComponent;
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-	int32 loadedAmmo;	// ¿Â¿¸µ» √—æÀ ºˆ
+		int32 loadedAmmo;	// Ïû•Ï†ÑÎêú Ï¥ùÏïå Ïàò
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-	int32 ammoPool;		// ≥≤¿∫ √—æÀ ºˆ
+		int32 ammoPool;		// ÎÇ®ÏùÄ Ï¥ùÏïå Ïàò
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-	int32 magazine;		// ≈∫√¢ øÎ∑Æ
+		int32 magazine;		// ÌÉÑÏ∞Ω Ïö©Îüâ
 
 	UPROPERTY(VisibleAnywhere, Category = Ammo)
-	bool isReloading;
+		bool isReloading;
 
 	UPROPERTY(VisibleAnywhere, Category = Aim)
-	bool isAiming;
+		bool isAiming;
 
 	UPROPERTY(VisibleAnywhere, Category = Fire)
-	bool isFiring;
+		bool isFiring;
 
 public:
 	APlumFPSCharacter();

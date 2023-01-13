@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PlumFPSCharacter.h"
 #include "PlumFPSProjectile.h"
@@ -109,7 +109,7 @@ void APlumFPSCharacter::FullAutoFire()
 {
 	isFiring = true;
 	OnFire();
-	GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, 0.2f, true); // 0.*f : ¿¬»çÀ², true : ¹İº¹
+	GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, 0.2f, true); // 0.*f : ì—°ì‚¬ìœ¨, true : ë°˜ë³µ
 }
 
 void APlumFPSCharacter::StopFire()
@@ -138,7 +138,7 @@ void APlumFPSCharacter::OnFire()
 		FVector Start = SpawnLocation;
 		FVector End;
 
-		if (isAiming) // Á¶ÁØ »ç°İ½Ã¿¡´Â ÃÑ¾ËÀÌ Æ¢Áö¾Ê¾Æ¾ß ÇÔ
+		if (isAiming) // ì¡°ì¤€ ì‚¬ê²©ì‹œì—ëŠ” ì´ì•Œì´ íŠ€ì§€ì•Šì•„ì•¼ í•¨
 		{
 			End = Start + (SpawnRotation.Vector() * TraceDistance);
 
@@ -149,14 +149,14 @@ void APlumFPSCharacter::OnFire()
 
 			AddControllerYawInput(float(yawRecoil(recoil)) / 1000);
 			AddControllerPitchInput(float(pitchRecoil(recoil)) / 500);
-			//TODO Á¶ÁØ½Ã¿¡´Â È­¸éÀÚÃ¼°¡ À§·Î ¿Ã¶ó°¡´Â ¹İµ¿, ºñÁ¶ÁØ½Ã¿¡´Â ÃÑ¾ËÀÌ ÆÛÁö´Â ¹üÀ§¸¸ º¯°æ or ¹üÀ§ º¯°æ°ú ÇÔ²² È­¸éÀÚÃ¼°¡ ¿Ã¶ó°¡°Ô ÇÏ±â
+			//TODO ì¡°ì¤€ì‹œì—ëŠ” í™”ë©´ìì²´ê°€ ìœ„ë¡œ ì˜¬ë¼ê°€ëŠ” ë°˜ë™, ë¹„ì¡°ì¤€ì‹œì—ëŠ” ì´ì•Œì´ í¼ì§€ëŠ” ë²”ìœ„ë§Œ ë³€ê²½ or ë²”ìœ„ ë³€ê²½ê³¼ í•¨ê»˜ í™”ë©´ìì²´ê°€ ì˜¬ë¼ê°€ê²Œ í•˜ê¸°
 		}
-		else // ºñÁ¶ÁØ »ç°İ½Ã
+		else // ë¹„ì¡°ì¤€ ì‚¬ê²©ì‹œ
 		{
 			std::random_device rd;
 			std::mt19937 gen(rd());
 			std::uniform_int_distribution<int> dis(-50, 50);
-			// -50, 50, 2000 ¼ıÀÚ Á¶Àı½Ã ÃÑ¾ËÀÌ Æ¢´Â °÷ÀÌ ¹Ù²ñ
+			// -50, 50, 2000 ìˆ«ì ì¡°ì ˆì‹œ ì´ì•Œì´ íŠ€ëŠ” ê³³ì´ ë°”ë€œ
 			End = Start + (((SpawnRotation.Vector() + FVector(float(dis(gen)) / 2000, float(dis(gen)) / 2000, float(dis(gen)) / 2000)) * TraceDistance));
 
 			std::mt19937 recoil(rd());
