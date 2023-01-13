@@ -94,9 +94,14 @@ protected:
 	void OnFire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_OnFire(FVector Start, FVector End);
+		void Server_OnFire(FVector Start, FVector End);
 	bool Server_OnFire_Validate(FVector Start, FVector End);
 	void Server_OnFire_Implementation(FVector Start, FVector End);
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+		void Multi_OnFire(FVector Start, FVector End);
+	bool Multi_OnFire_Validate(FVector Start, FVector End);
+	void Multi_OnFire_Implementation(FVector Start, FVector End);
 
 	/** Reloading ammo */
 	void Reload();
