@@ -174,7 +174,19 @@ void APlumFPSCharacter::OnFire()
 
 		if (bHit)
 		{
-			DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+			if (bHit)
+			{
+				if (hit.Actor->ActorHasTag("head"))
+				{
+					UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
+				}
+				UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
+				DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+			}
 		}
 
 		if (!HasAuthority())
