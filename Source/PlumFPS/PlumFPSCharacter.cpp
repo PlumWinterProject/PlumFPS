@@ -67,6 +67,9 @@ APlumFPSCharacter::APlumFPSCharacter()
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 
 	TraceDistance = 2000.0f;
+
+	// 자신 이외 모두가 일반 몸통 메시를 볼 수 있습니다.
+	GetMesh()->SetOwnerNoSee(true);
 }
 
 void APlumFPSCharacter::BeginPlay()
@@ -168,6 +171,9 @@ void APlumFPSCharacter::OnFire()
 		}
 
 		FCollisionQueryParams TraceParams;
+
+		TraceParams.AddIgnoredActor(this);
+
 		bool bHit = World->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
 
 		DrawDebugLine(World, Start, End, FColor::Blue, false, 2.0f);
