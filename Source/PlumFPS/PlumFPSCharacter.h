@@ -36,13 +36,13 @@ class APlumFPSCharacter : public ACharacter
 		UCameraComponent* FirstPersonCameraComponent;
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 loadedAmmo;	// 장전된 총알 수
+		int32 loadedAmmo;
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 ammoPool;		// 남은 총알 수
+		int32 ammoPool;		// remain bullet
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 magazine;		// 탄창 용량
+		int32 magazine;		// capacity of magazine
 
 	UPROPERTY(VisibleAnywhere, Category = Ammo)
 		bool isReloading;
