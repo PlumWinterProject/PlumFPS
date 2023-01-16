@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "weaponBase.h"
+#include "mainWeapon.h"
+#include "subWeapon.h"
 #include "PlumFPSCharacter.generated.h"
 
 class UInputComponent;
@@ -39,7 +42,7 @@ class APlumFPSCharacter : public ACharacter
 		int32 loadedAmmo;
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 ammoPool;		// remain bullet
+		int32 remainAmmo;		// remain bullet
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
 		int32 magazine;		// capacity of magazine
@@ -52,6 +55,15 @@ class APlumFPSCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, Category = Fire)
 		bool isFiring;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		AweaponBase* mainWeapon;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		AweaponBase* subWeapon;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		AweaponBase* currentWeapon;
 
 public:
 	APlumFPSCharacter();
