@@ -84,6 +84,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 		UAnimMontage* FireAnimation;
 
+	// Character damage 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 DefaultHP = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 CharacterHP = 100;
+
+
 private:
 	FTimerHandle reloadTimer;
 	FTimerHandle fireTimer;
@@ -121,6 +128,21 @@ protected:
 	void MoveRight(float Val);
 
 	float TraceDistance;
+
+	//Take Damage
+	UFUNCTION(BlueprintCallable)
+	void SetCharacterHP(int32 hp);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetCharacterHP();
+
+	/*
+	UFUNCTION(BlueprintCallable)
+	void TakeDamage(int32 damage);*/
+
+
+	UFUNCTION(BlueprintCallable)
+		virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 	// APawn interface

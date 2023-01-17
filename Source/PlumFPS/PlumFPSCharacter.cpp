@@ -191,6 +191,12 @@ void APlumFPSCharacter::OnFire()
 					UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
 				}
 				UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
+
+				FDamageEvent DamageEvent;
+				hit.Actor->TakeDamage(10.0f, DamageEvent, GetController(), this);
+
+				
+
 				DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 			}
 		}
@@ -255,6 +261,9 @@ void APlumFPSCharacter::Multi_OnFire_Implementation(FVector Start, FVector End)
 
 		if (bHit)
 		{
+
+			FDamageEvent DamageEvent;
+			hit.Actor->TakeDamage(10.0f, DamageEvent, GetController(), this);
 			DrawDebugBox(GetWorld(), hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 		}
 
@@ -339,4 +348,35 @@ void APlumFPSCharacter::ReloadDelay()
 	isReloading = false;
 	UE_LOG(LogTemp, Log, TEXT("Reloading Complete\nCurrent Ammo : %d / %d"), loadedAmmo, ammoPool);
 	GetWorldTimerManager().ClearTimer(reloadTimer);
+}
+
+void APlumFPSCharacter::SetCharacterHP(int32 hp) {
+	CharacterHP = hp;
+}
+
+int32 APlumFPSCharacter::GetCharacterHP() {
+	return CharacterHP;
+}
+
+/*
+void APlumFPSCharacter::TakeDamage(int32 damage) {
+	int32 HP = GetCharacterHP();
+
+	HP -= damage;
+
+	SetCharacterHP(HP);
+}*/
+
+float APlumFPSCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,class AController* EventInstigator, AActor* DamageCauser) {
+	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	int32 HP = GetCharacterHP();
+
+	HP -= FinalDamage;
+
+	SetCharacterHP(HP);
+
+	UE_LOG(LogTemp, Warning, TEXT("Get Damaged %s : %d / %d "), * GetName(), CharacterHP, DefaultHP);
+
+	return FinalDamage;
 }
