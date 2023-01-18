@@ -108,6 +108,8 @@ void APlumFPSCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	// Bind reload event
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlumFPSCharacter::Reload);
 
+	PlayerInputComponent->BindAction("Melee", IE_Pressed, this, &APlumFPSCharacter::DelayMelee);
+
 	// Bind ads event
 	PlayerInputComponent->BindAction("Ads", IE_Pressed, this, &APlumFPSCharacter::Ads);
 
@@ -127,6 +129,11 @@ void APlumFPSCharacter::FullAutoFire()
 	{
 		GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, currentWeapon->fireRate, true); // 0.*f : 연사율, true : 반복
 	}
+}
+
+void APlumFPSCharacter::DelayMelee()
+{
+	GetWorld()->GetTimerManager().SetTimer(meleeTimer, this, &APlumFPSCharacter::Melee, 0.5f, false);
 }
 
 void APlumFPSCharacter::StopFire()
@@ -324,6 +331,44 @@ void APlumFPSCharacter::Reload()
 		}
 	}
 }
+
+void APlumFPSCharacter::Melee()
+{
+	UWorld* const World = GetWorld();
+	if (World != nullptr)
+	{
+		FRotator SpawnRotation = GetControlRotation();
+		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+		FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
+		FHitResult hit;
+
+		GetController()->GetPlayerViewPoint(SpawnLocation, SpawnRotation);
+
+		FVector Start = SpawnLocation;
+		FVector End = Start + (SpawnRotation.Vector() * 200.0f);
+
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+		bool bHit = World->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
+
+		DrawDebugLine(World, Start, End, FColor::Blue, false, 2.0f);
+
+		if (bHit)
+		{
+			if (hit.Actor->ActorHasTag("head"))
+			{
+				UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
+			}
+			UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
+			DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+		}
+	}
+}
+
 
 void APlumFPSCharacter::Ads()
 {

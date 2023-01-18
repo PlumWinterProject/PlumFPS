@@ -106,7 +106,7 @@ public:
 private:
 	FTimerHandle reloadTimer;
 	FTimerHandle fireTimer;
-
+	FTimerHandle meleeTimer;
 protected:
 
 	/** Fires a bullet. */
@@ -126,6 +126,10 @@ protected:
 	void Reload();
 
 	void ReloadDelay();
+
+	void Melee();
+
+	void DelayMelee();
 
 	void Ads();
 
