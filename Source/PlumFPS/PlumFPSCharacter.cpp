@@ -67,6 +67,9 @@ APlumFPSCharacter::APlumFPSCharacter()
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 
 	TraceDistance = 2000.0f;
+
+	// 자신 이외 모두가 일반 몸통 메시를 볼 수 있습니다.
+	GetMesh()->SetOwnerNoSee(true);
 }
 
 void APlumFPSCharacter::BeginPlay()
@@ -168,6 +171,9 @@ void APlumFPSCharacter::OnFire()
 		}
 
 		FCollisionQueryParams TraceParams;
+
+		TraceParams.AddIgnoredActor(this);
+
 		bool bHit = World->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
 
 		DrawDebugLine(World, Start, End, FColor::Blue, false, 2.0f);
@@ -185,6 +191,12 @@ void APlumFPSCharacter::OnFire()
 					UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
 				}
 				UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
+
+				FDamageEvent DamageEvent;
+				hit.Actor->TakeDamage(10.0f, DamageEvent, GetController(), this);
+
+				
+
 				DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 			}
 		}
@@ -248,19 +260,20 @@ void APlumFPSCharacter::Multi_OnFire_Implementation(FVector Start, FVector End)
 
 		if (bHit)
 		{
-			if (bHit)
+			FDamageEvent DamageEvent;
+			hit.Actor->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			DrawDebugBox(GetWorld(), hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+      
+			if (hit.Actor->ActorHasTag("head"))
 			{
-				if (hit.Actor->ActorHasTag("head"))
-				{
-					UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
-				}
-				UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
-				DrawDebugBox(GetWorld(), hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+				UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
 			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
+			}
+			UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
+			DrawDebugBox(GetWorld(), hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 		}
 
 		if (FireSound != nullptr)
@@ -344,4 +357,35 @@ void APlumFPSCharacter::ReloadDelay()
 	isReloading = false;
 	UE_LOG(LogTemp, Log, TEXT("Reloading Complete\nCurrent Ammo : %d / %d"), loadedAmmo, ammoPool);
 	GetWorldTimerManager().ClearTimer(reloadTimer);
+}
+
+void APlumFPSCharacter::SetCharacterHP(int32 hp) {
+	CharacterHP = hp;
+}
+
+int32 APlumFPSCharacter::GetCharacterHP() {
+	return CharacterHP;
+}
+
+/*
+void APlumFPSCharacter::TakeDamage(int32 damage) {
+	int32 HP = GetCharacterHP();
+
+	HP -= damage;
+
+	SetCharacterHP(HP);
+}*/
+
+float APlumFPSCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,class AController* EventInstigator, AActor* DamageCauser) {
+	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	int32 HP = GetCharacterHP();
+
+	HP -= FinalDamage;
+
+	SetCharacterHP(HP);
+
+	UE_LOG(LogTemp, Warning, TEXT("Get Damaged %s : %d / %d "), * GetName(), CharacterHP, DefaultHP);
+
+	return FinalDamage;
 }
