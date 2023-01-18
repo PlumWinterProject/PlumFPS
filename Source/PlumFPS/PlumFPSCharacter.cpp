@@ -254,16 +254,25 @@ void APlumFPSCharacter::Multi_OnFire_Implementation(FVector Start, FVector End)
 	{
 		FHitResult hit;
 		FCollisionQueryParams TraceParams;
-
 		bool bHit = GetWorld()->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
 
 		DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.0f);
 
 		if (bHit)
 		{
-
 			FDamageEvent DamageEvent;
 			hit.Actor->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			DrawDebugBox(GetWorld(), hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+      
+			if (hit.Actor->ActorHasTag("head"))
+			{
+				UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
+			}
+			UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
 			DrawDebugBox(GetWorld(), hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 		}
 
