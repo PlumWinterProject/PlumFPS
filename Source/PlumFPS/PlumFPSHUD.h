@@ -16,10 +16,13 @@ public:
 
 	/** Primary draw call for the HUD */
 	virtual void DrawHUD() override;
+	void setNormal();
+	void setAds();
 
 private:
 	/** Crosshair asset pointer */
 	class UTexture2D* CrosshairTex;
-
+	float position;
+	bool isAim;
 };
 

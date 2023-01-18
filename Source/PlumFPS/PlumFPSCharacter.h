@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "weaponBase.h"
+#include "mainWeapon.h"
+#include "subWeapon.h"
 #include "PlumFPSCharacter.generated.h"
 
 class UInputComponent;
@@ -36,13 +39,13 @@ class APlumFPSCharacter : public ACharacter
 		UCameraComponent* FirstPersonCameraComponent;
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 loadedAmmo;	// 장전된 총알 수
+		int32 loadedAmmo;
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 ammoPool;		// 남은 총알 수
+		int32 remainAmmo;		// remain bullet
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 magazine;		// 탄창 용량
+		int32 magazine;		// capacity of magazine
 
 	UPROPERTY(VisibleAnywhere, Category = Ammo)
 		bool isReloading;
@@ -52,6 +55,15 @@ class APlumFPSCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, Category = Fire)
 		bool isFiring;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		AweaponBase* mainWeapon;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		AweaponBase* subWeapon;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		AweaponBase* currentWeapon;
 
 public:
 	APlumFPSCharacter();

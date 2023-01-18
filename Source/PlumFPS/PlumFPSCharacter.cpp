@@ -12,6 +12,8 @@
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "DrawDebugHelpers.h"
+#include "PlumFPSHUD.h"
+#include "PlumFPSGameMode.h"
 #include <random>
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -24,13 +26,22 @@ APlumFPSCharacter::APlumFPSCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
+	AmainWeapon* main{ NewObject<AmainWeapon>(GetTransientPackage(), AmainWeapon::StaticClass()) };
+	mainWeapon = main;
+
+	AsubWeapon* sub{ NewObject<AsubWeapon>(GetTransientPackage(), AsubWeapon::StaticClass()) };
+	subWeapon = sub;
+
+	currentWeapon = mainWeapon;
+	//currentWeapon = subWeapon;
+
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
-	loadedAmmo = 30;
-	ammoPool = 100;
-	magazine = 30;
+	loadedAmmo = currentWeapon->magazine;
+	remainAmmo = currentWeapon->remainAmmo;
+	magazine = currentWeapon->magazine;
 
 	isReloading = false;
 	isAiming = false;
@@ -112,7 +123,10 @@ void APlumFPSCharacter::FullAutoFire()
 {
 	isFiring = true;
 	OnFire();
-	GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, 0.2f, true); // 0.*f : 연사율, true : 반복
+	if (currentWeapon->canFullAutoFire)
+	{
+		GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, currentWeapon->fireRate, true); // 0.*f : 연사율, true : 반복
+	}
 }
 
 void APlumFPSCharacter::StopFire()
@@ -126,7 +140,7 @@ void APlumFPSCharacter::OnFire()
 	if (loadedAmmo <= 0 || isReloading == true) { return; }
 
 	loadedAmmo -= 1;
-	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d / %d"), loadedAmmo, ammoPool);
+	UE_LOG(LogTemp, Log, TEXT("Current Ammo : %d / %d"), loadedAmmo, remainAmmo);
 
 	UWorld* const World = GetWorld();
 	if (World != nullptr)
@@ -141,7 +155,7 @@ void APlumFPSCharacter::OnFire()
 		FVector Start = SpawnLocation;
 		FVector End;
 
-		if (isAiming) // 조준 사격시에는 총알이 튀지않아야 함
+		if (isAiming) 
 		{
 			End = Start + (SpawnRotation.Vector() * TraceDistance);
 
@@ -150,55 +164,49 @@ void APlumFPSCharacter::OnFire()
 			std::uniform_int_distribution<int> yawRecoil(-50, 50);
 			std::uniform_int_distribution<int> pitchRecoil(-100, 0);
 
-			AddControllerYawInput(float(yawRecoil(recoil)) / 1000);
-			AddControllerPitchInput(float(pitchRecoil(recoil)) / 500);
-			//TODO 조준시에는 화면자체가 위로 올라가는 반동, 비조준시에는 총알이 퍼지는 범위만 변경 or 범위 변경과 함께 화면자체가 올라가게 하기
+			AddControllerYawInput(float(yawRecoil(recoil)) / currentWeapon->coefYawRecoil);
+			AddControllerPitchInput(float(pitchRecoil(recoil)) / currentWeapon->coefPitchRecoil);
 		}
-		else // 비조준 사격시
+		else // not aiming fire
 		{
 			std::random_device rd;
 			std::mt19937 gen(rd());
 			std::uniform_int_distribution<int> dis(-50, 50);
-			// -50, 50, 2000 숫자 조절시 총알이 튀는 곳이 바뀜
-			End = Start + (((SpawnRotation.Vector() + FVector(float(dis(gen)) / 2000, float(dis(gen)) / 2000, float(dis(gen)) / 2000)) * TraceDistance));
+			// -50, 50, 2000 <- change this numbers, you can change spread range of bullet
+			End = Start + (((SpawnRotation.Vector() + FVector(float(dis(gen)) / currentWeapon->bulletSpread, float(dis(gen)) / currentWeapon->bulletSpread, float(dis(gen)) / currentWeapon->bulletSpread)) * TraceDistance));
 
 			std::mt19937 recoil(rd());
 			std::uniform_int_distribution<int> yawRecoil(-50, 50);
 			std::uniform_int_distribution<int> pitchRecoil(-100, 0);
 
-			AddControllerYawInput(float(yawRecoil(recoil)) / 1000);
-			AddControllerPitchInput(float(pitchRecoil(recoil)) / 500);
+			AddControllerYawInput(float(yawRecoil(recoil)) / currentWeapon->coefYawRecoil);
+			AddControllerPitchInput(float(pitchRecoil(recoil)) / currentWeapon->coefPitchRecoil);
 		}
 
 		FCollisionQueryParams TraceParams;
 
 		TraceParams.AddIgnoredActor(this);
-
+    
 		bool bHit = World->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
 
 		DrawDebugLine(World, Start, End, FColor::Blue, false, 2.0f);
 
 		if (bHit)
 		{
-			if (bHit)
+			if (hit.Actor->ActorHasTag("head"))
 			{
-				if (hit.Actor->ActorHasTag("head"))
-				{
-					UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
-				}
-				UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
-
-				FDamageEvent DamageEvent;
-				hit.Actor->TakeDamage(10.0f, DamageEvent, GetController(), this);
-
-				
-
-				DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+				UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
 			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
+			}
+			UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
+      
+      FDamageEvent DamageEvent;
+			hit.Actor->TakeDamage(10.0f, DamageEvent, GetController(), this);
+      
+			DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
 		}
 
 		if (!HasAuthority())
@@ -295,23 +303,23 @@ void APlumFPSCharacter::Multi_OnFire_Implementation(FVector Start, FVector End)
 
 void APlumFPSCharacter::Reload()
 {
-	if (isReloading == false && loadedAmmo != magazine && ammoPool != 0)
+	if (isReloading == false && loadedAmmo != magazine && remainAmmo != 0)
 	{
 		isReloading = true;
 		UE_LOG(LogTemp, Log, TEXT("Start Reloading"));
 
 		GetWorld()->GetTimerManager().SetTimer(reloadTimer, this, &APlumFPSCharacter::ReloadDelay, 1.0f, false);
 
-		if (ammoPool <= 0 || loadedAmmo >= magazine) { return; }
+		if (remainAmmo <= 0 || loadedAmmo >= magazine) { return; }
 
-		if (ammoPool < (magazine - loadedAmmo))
+		if (remainAmmo < (magazine - loadedAmmo))
 		{
-			loadedAmmo = loadedAmmo + ammoPool;
-			ammoPool = 0;
+			loadedAmmo = loadedAmmo + remainAmmo;
+			remainAmmo = 0;
 		}
 		else
 		{
-			ammoPool = ammoPool - (magazine - loadedAmmo);
+			remainAmmo = remainAmmo - (magazine - loadedAmmo);
 			loadedAmmo = magazine;
 		}
 	}
@@ -321,15 +329,25 @@ void APlumFPSCharacter::Ads()
 {
 	if (isReloading == false)
 	{
+		APlumFPSHUD* HU = Cast<APlumFPSHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
+
 		if (isAiming == false)
 		{
 			isAiming = true;
-			FirstPersonCameraComponent->FieldOfView = 45.0f;
+			Mesh1P->SetHiddenInGame(true);
+			FP_Gun->SetHiddenInGame(true);
+			FirstPersonCameraComponent->FieldOfView *= currentWeapon->zoomScale;
+
+			HU->setAds();
 		}
 		else
 		{
 			isAiming = false;
+			Mesh1P->SetHiddenInGame(false);
+			FP_Gun->SetHiddenInGame(false);
 			FirstPersonCameraComponent->FieldOfView = 90.0f;
+
+			HU->setNormal();
 		}
 	}
 }
@@ -355,7 +373,7 @@ void APlumFPSCharacter::MoveRight(float Value)
 void APlumFPSCharacter::ReloadDelay()
 {
 	isReloading = false;
-	UE_LOG(LogTemp, Log, TEXT("Reloading Complete\nCurrent Ammo : %d / %d"), loadedAmmo, ammoPool);
+	UE_LOG(LogTemp, Log, TEXT("Reloading Complete\nCurrent Ammo : %d / %d"), loadedAmmo, remainAmmo);
 	GetWorldTimerManager().ClearTimer(reloadTimer);
 }
 
