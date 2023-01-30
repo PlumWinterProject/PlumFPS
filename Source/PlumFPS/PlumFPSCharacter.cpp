@@ -26,22 +26,45 @@ APlumFPSCharacter::APlumFPSCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
-	AmainWeapon* main{ NewObject<AmainWeapon>(GetTransientPackage(), AmainWeapon::StaticClass()) };
-	mainWeapon = main;
 
-	AsubWeapon* sub{ NewObject<AsubWeapon>(GetTransientPackage(), AsubWeapon::StaticClass()) };
-	subWeapon = sub;
+	//AmainWeapon* main{ NewObject<AmainWeapon>(GetTransientPackage(), AmainWeapon::StaticClass()) };
+	//mainWeapon = GetWorld()->SpawnActor<AmainWeapon>(AmainWeapon::StaticClass(), Sp);
 
-	currentWeapon = mainWeapon;
+	//AsubWeapon* sub{ NewObject<AsubWeapon>(GetTransientPackage(), AsubWeapon::StaticClass()) };
+	//subWeapon = sub;
+
+	//currentWeapon = mainWeapon;
 	//currentWeapon = subWeapon;
 
-	// set our turn rates for input
+	mainWeapon.magazine = 30;
+	mainWeapon.remainAmmo = 120;
+	mainWeapon.coefYawRecoil = 1000;
+	mainWeapon.coefPitchRecoil = 500;
+	mainWeapon.zoomScale = 0.5f;
+	mainWeapon.fireRate = 0.2f;
+	mainWeapon.bulletSpread = 2000;
+	mainWeapon.damage = 40;
+	mainWeapon.canFullAutoFire = true;
+
+	subWeapon.magazine = 12;
+	subWeapon.remainAmmo = 60;
+	subWeapon.coefYawRecoil = 1000;
+	subWeapon.coefPitchRecoil = 500;
+	subWeapon.zoomScale = 0.8f;
+	subWeapon.fireRate = 0.2f;
+	subWeapon.bulletSpread = 2000;
+	subWeapon.damage = 40;
+	subWeapon.canFullAutoFire = false;
+
+	currentWeapon = subWeapon;
+
+	 //set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
-	loadedAmmo = currentWeapon->magazine;
-	remainAmmo = currentWeapon->remainAmmo;
-	magazine = currentWeapon->magazine;
+	loadedAmmo = currentWeapon.magazine;
+	remainAmmo = currentWeapon.remainAmmo;
+	magazine = currentWeapon.magazine;
 
 	isReloading = false;
 	isAiming = false;
@@ -108,6 +131,8 @@ void APlumFPSCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	// Bind reload event
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlumFPSCharacter::Reload);
 
+	PlayerInputComponent->BindAction("Melee", IE_Pressed, this, &APlumFPSCharacter::DelayMelee);
+
 	// Bind ads event
 	PlayerInputComponent->BindAction("Ads", IE_Pressed, this, &APlumFPSCharacter::Ads);
 
@@ -123,10 +148,15 @@ void APlumFPSCharacter::FullAutoFire()
 {
 	isFiring = true;
 	OnFire();
-	if (currentWeapon->canFullAutoFire)
+	if (currentWeapon.canFullAutoFire)
 	{
-		GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, currentWeapon->fireRate, true); // 0.*f : 연사율, true : 반복
+		GetWorld()->GetTimerManager().SetTimer(fireTimer, this, &APlumFPSCharacter::OnFire, currentWeapon.fireRate, true); // 0.*f : 연사율, true : 반복
 	}
+}
+
+void APlumFPSCharacter::DelayMelee()
+{
+	GetWorld()->GetTimerManager().SetTimer(meleeTimer, this, &APlumFPSCharacter::Melee, 0.5f, false);
 }
 
 void APlumFPSCharacter::StopFire()
@@ -164,8 +194,8 @@ void APlumFPSCharacter::OnFire()
 			std::uniform_int_distribution<int> yawRecoil(-50, 50);
 			std::uniform_int_distribution<int> pitchRecoil(-100, 0);
 
-			AddControllerYawInput(float(yawRecoil(recoil)) / currentWeapon->coefYawRecoil);
-			AddControllerPitchInput(float(pitchRecoil(recoil)) / currentWeapon->coefPitchRecoil);
+			AddControllerYawInput(float(yawRecoil(recoil)) / currentWeapon.coefYawRecoil);
+			AddControllerPitchInput(float(pitchRecoil(recoil)) / currentWeapon.coefPitchRecoil);
 		}
 		else // not aiming fire
 		{
@@ -173,14 +203,14 @@ void APlumFPSCharacter::OnFire()
 			std::mt19937 gen(rd());
 			std::uniform_int_distribution<int> dis(-50, 50);
 			// -50, 50, 2000 <- change this numbers, you can change spread range of bullet
-			End = Start + (((SpawnRotation.Vector() + FVector(float(dis(gen)) / currentWeapon->bulletSpread, float(dis(gen)) / currentWeapon->bulletSpread, float(dis(gen)) / currentWeapon->bulletSpread)) * TraceDistance));
+			End = Start + (((SpawnRotation.Vector() + FVector(float(dis(gen)) / currentWeapon.bulletSpread, float(dis(gen)) / currentWeapon.bulletSpread, float(dis(gen)) / currentWeapon.bulletSpread)) * TraceDistance));
 
 			std::mt19937 recoil(rd());
 			std::uniform_int_distribution<int> yawRecoil(-50, 50);
 			std::uniform_int_distribution<int> pitchRecoil(-100, 0);
 
-			AddControllerYawInput(float(yawRecoil(recoil)) / currentWeapon->coefYawRecoil);
-			AddControllerPitchInput(float(pitchRecoil(recoil)) / currentWeapon->coefPitchRecoil);
+			AddControllerYawInput(float(yawRecoil(recoil)) / currentWeapon.coefYawRecoil);
+			AddControllerPitchInput(float(pitchRecoil(recoil)) / currentWeapon.coefPitchRecoil);
 		}
 
 		FCollisionQueryParams TraceParams;
@@ -325,6 +355,44 @@ void APlumFPSCharacter::Reload()
 	}
 }
 
+void APlumFPSCharacter::Melee()
+{
+	UWorld* const World = GetWorld();
+	if (World != nullptr)
+	{
+		FRotator SpawnRotation = GetControlRotation();
+		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+		FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
+		FHitResult hit;
+
+		GetController()->GetPlayerViewPoint(SpawnLocation, SpawnRotation);
+
+		FVector Start = SpawnLocation;
+		FVector End = Start + (SpawnRotation.Vector() * 200.0f);
+
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+		bool bHit = World->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, TraceParams);
+
+		DrawDebugLine(World, Start, End, FColor::Blue, false, 2.0f);
+
+		if (bHit)
+		{
+			if (hit.Actor->ActorHasTag("head"))
+			{
+				UE_LOG(LogTemp, Log, TEXT("HeadShot!"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("BodyShot!"));
+			}
+			UE_LOG(LogTemp, Log, TEXT("%s"), *hit.GetActor()->GetName());
+			DrawDebugBox(World, hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.0f);
+		}
+	}
+}
+
+
 void APlumFPSCharacter::Ads()
 {
 	if (isReloading == false)
@@ -336,7 +404,7 @@ void APlumFPSCharacter::Ads()
 			isAiming = true;
 			Mesh1P->SetHiddenInGame(true);
 			FP_Gun->SetHiddenInGame(true);
-			FirstPersonCameraComponent->FieldOfView *= currentWeapon->zoomScale;
+			FirstPersonCameraComponent->FieldOfView *= currentWeapon.zoomScale;
 
 			HU->setAds();
 		}
