@@ -4,9 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "weaponBase.h"
-#include "mainWeapon.h"
-#include "subWeapon.h"
 #include "PlumFPSCharacter.generated.h"
 
 class UInputComponent;
@@ -16,6 +13,39 @@ class UCameraComponent;
 class UMotionControllerComponent;
 class UAnimMontage;
 class USoundBase;
+
+USTRUCT()
+struct FweaponBase1
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+		int32 magazine;
+
+	UPROPERTY()
+		int32 remainAmmo;
+
+	UPROPERTY()
+		int32 coefYawRecoil;
+
+	UPROPERTY()
+		int32 coefPitchRecoil;
+
+	UPROPERTY()
+		float zoomScale;
+
+	UPROPERTY()
+		float fireRate;
+
+	UPROPERTY()
+		int32 bulletSpread;
+
+	UPROPERTY()
+		int32 damage;
+
+	UPROPERTY()
+		bool canFullAutoFire;
+};
 
 UCLASS(config = Game)
 class APlumFPSCharacter : public ACharacter
@@ -41,11 +71,47 @@ class APlumFPSCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, Category = Ammo)
 		int32 loadedAmmo;
 
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	int32 magazine;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	int32 remainAmmo;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	int32 coefYawRecoil;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	int32 coefPitchRecoil;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	float zoomScale;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	float fireRate;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	int32 bulletSpread;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	int32 damage;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//	bool canFullAutoFire;
+
 	UPROPERTY(EditAnywhere, Category = Ammo)
 		int32 remainAmmo;		// remain bullet
 
 	UPROPERTY(EditAnywhere, Category = Ammo)
 		int32 magazine;		// capacity of magazine
+
+	UPROPERTY()
+		FweaponBase1 mainWeapon;
+
+	UPROPERTY()
+		FweaponBase1 subWeapon;
+
+	UPROPERTY()
+		FweaponBase1 currentWeapon;
 
 	UPROPERTY(VisibleAnywhere, Category = Ammo)
 		bool isReloading;
@@ -56,14 +122,14 @@ class APlumFPSCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, Category = Fire)
 		bool isFiring;
 
-	UPROPERTY(VisibleAnywhere, Category = Weapon)
-		AweaponBase* mainWeapon;
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+		//AweaponBase* mainWeapon;
 
-	UPROPERTY(VisibleAnywhere, Category = Weapon)
-		AweaponBase* subWeapon;
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+		//AweaponBase* subWeapon;
 
-	UPROPERTY(VisibleAnywhere, Category = Weapon)
-		AweaponBase* currentWeapon;
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+		//AweaponBase* currentWeapon;
 
 public:
 	APlumFPSCharacter();
